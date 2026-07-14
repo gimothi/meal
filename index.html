@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ 실시간 전국 고등학교 급식 & 피드백 센터</title>
+    <style>
+        :root {
+            --primary-gold: #FFD700;
+            --dark-gold: #B8860B;
+            --light-gold: #FFFDD0;
+            --bg-rainbow: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            background: linear-gradient(124deg, #ffafbd, #ffc3a0, #ffebd3, #d4fc79, #96e6a1, #84fab0, #8fd3f4, #e0c3fc, #fcedf2);
+            background-size: 1000% 1000%;
+            animation: rainbowFlow 20s ease infinite;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            box-sizing: border-box;
+            color: #333;
+        }
+
+        @keyframes rainbowFlow {
+            0% { background-position: 0% 50% }
+            50% { background-position: 100% 50% }
+            100% { background-position: 0% 50% }
+        }
+
+        .wrapper {
+            width: 100%;
+            max-width: 480px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* 메인 카드 컨테이너 */
+        .card {
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            border: 4px solid var(--primary-gold);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+            padding: 24px;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            font-size: 2.2rem;
+            margin: 0;
+            background: linear-gradient(45deg, #ff3366, #ff9900, #33ccff, #33ff66);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 900;
+            letter-spacing: -1px;
+            display: inline-block;
+        }
+
+        .sub-logo {
+            color: var(--dark-gold);
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-top: 4px;
+            letter-spacing: 1px;
+        }
+
+        /* 학교 설정 세션 */
+        .school-selector {
+            background: #fff9e6;
+            border: 2px dashed var(--primary-gold);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .school-name-display {
+            font-weight: bold;
+            color: #444;
+            margin-bottom: 10px;
+            font-size: 1.05rem;
+        }
+
+        .search-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        input[type="text"], input[type="date"] {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus, input[type="date"]:focus {
+            border-color: var(--primary-gold);
+            box-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+        }
+
+        button {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+            box-shadow: 0 4px 10px rgba(255, 165, 0, 0.3);
+            font-family: inherit;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        /* 학교 검색 결과 모달/리스트 */
+        .search-results {
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            margin-top: 10px;
+            background: white;
+            padding: 0;
+            list-style: none;
+            text-align: left;
+        }
+
+        .search-results li {
+            padding: 10px 15px;
+            border-bottom: 1px solid #f9f9f9;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .search-results li:hover {
+            background: var(--light-gold);
+        }
+
+        /* 급식 메인 보드 */
+        .meal-date-selector {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        /* 🎰 럭셔리 매칭 릴 UI */
+        .slot-machine-container {
+            background: radial-gradient(circle, #3a2d01 0%, #151000 100%);
+            border: 6px solid #FFD700;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4), inset 0 0 20px rgba(255,215,0,0.4);
+            text-align: center;
+        }
+
+        .slot-title {
+            color: #FFD700;
+            font-weight: 800;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            text-shadow: 0 0 5px rgba(255,215,0,0.6);
+            letter-spacing: 1px;
+        }
+
+        .slot-reels {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .reel {
+            width: 70px;
+            height: 90px;
+            background: #fff;
+            border: 4px solid #DAA520;
+            border-radius: 12px;
+            font-size: 2.8rem;
+            font-weight: 900;
+            line-height: 90px;
+            text-align: center;
+            color: #111;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+        }
+
+        .reel.active-7 {
+            color: #ff3366;
+            text-shadow: 0 0 8px rgba(255,51,102,0.5);
+            background: #fff0f5;
+        }
+
+        .draw-btn {
+            background: linear-gradient(135deg, #FF4500 0%, #FFD700 100%);
+            border: 2px solid #fff;
+            color: white;
+            font-size: 1.1rem;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(255, 69, 0, 0.4);
+            transition: all 0.2s;
+            width: 80%;
+        }
+
+        .draw-btn:hover {
+            transform: scale(1.03);
+            box-shadow: 0 8px 20px rgba(255, 69, 0, 0.6);
+        }
+
+        .draw-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        /* 운명 결정 디스플레이 */
+        .destiny-banner {
+            font-size: 1.2rem;
+            font-weight: 900;
+            padding: 10px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: none;
+            animation: bounce 0.5s ease infinite alternate;
+        }
+
+        .destiny-jackpot {
+            background: linear-gradient(45deg, #ff3366, #ff9900);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(255, 51, 102, 0.4);
+        }
+
+        .destiny-normal {
+            background: #e1f5fe;
+            color: #0288d1;
+            border: 2px solid #0288d1;
+        }
+
+        @keyframes bounce {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-5px); }
+        }
+
+        /* 급식 카드 결과 섹션 */
+        .meal-section {
+            background: white;
+            border-radius: 18px;
+            padding: 18px;
+            margin-bottom: 16px;
+            border-left: 6px solid var(--primary-gold);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .meal-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #222;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 8px;
+        }
+
+        .meal-calories {
+            font-size: 0.85rem;
+            color: #888;
+            background: #f5f5f5;
+            padding: 3px 8px;
+            border-radius: 10px;
+        }
+
+        .meal-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .menu-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px dashed #f0f0f0;
+            font-size: 1.05rem;
+            font-weight: 500;
+        }
+
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+
+        /* 알레르기 태그 */
+        .allergy-badges {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        .allergy-badge {
+            font-size: 1rem;
+            cursor: help;
+        }
+
+        /* 하단 설문/피드백 조사 섹션 */
+        .survey-section {
+            margin-top: 25px;
+            background: #fff;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 2px solid var(--primary-gold);
+        }
+
+        .survey-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .rating-stars {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .star {
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #ccc;
+            transition: color 0.1s;
+        }
+
+        .star.active {
+            color: var(--primary-gold);
+            text-shadow: 0 0 5px rgba(255,215,0,0.5);
+        }
+
+        .feedback-input-container {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* 한줄평 피드 리스트 */
+        .feedback-list {
+            margin-top: 15px;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+            max-height: 150px;
+            overflow-y: auto;
+            text-align: left;
+        }
+
+        .feedback-item {
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .feedback-header {
+            display: flex;
+            justify-content: space-between;
+            color: #777;
+            margin-bottom: 4px;
+            font-weight: bold;
+        }
+
+        /* 안내 문구 */
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-weight: bold;
+            color: var(--dark-gold);
+        }
+
+        .info-txt {
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 10px;
+            line-height: 1.4;
+        }
+
+        .rules-box {
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 15px;
+            font-size: 0.85rem;
+            text-align: left;
+            border-left: 4px solid var(--primary-gold);
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="wrapper">
+        <div class="card">
+            <header>
+                <h1 class="logo">🍳 REAL MEAL</h1>
+                <div class="sub-logo">럭셔리 급식 운명 데스티니 릴</div>
+            </header>
+
+            <!-- 1. 학교 설정 영역 -->
+            <section class="school-selector">
+                <div class="school-name-display" id="currentSchoolDisplay">🏫 등록된 학교가 없습니다.</div>
+                <div class="search-row">
+                    <input type="text" id="schoolSearchInput" placeholder="예: '목포고' 또는 '경기고'">
+                    <button id="searchBtn">검색</button>
+                </div>
+                <ul class="search-results" id="searchResults" style="display: none;"></ul>
+            </section>
+
+            <!-- 2. 날짜 선택 영역 -->
+            <div class="meal-date-selector">
+                <input type="date" id="mealDatePicker">
+            </div>
+
+            <div class="rules-box">
+                <strong>🎰 럭셔리 매칭 룰 안내:</strong><br>
+                1. 릴에는 1~9 숫자와 10가지 프리미엄 푸드 이모지가 마구 뒤섞여 돌아갑니다!<br>
+                2. 릴을 돌려 정확히 <strong>777</strong> 매칭에 성공해야만 <strong>중식(점심)</strong>을 획득할 수 있습니다.<br>
+                3. 그 외의 혼합 조합(예: 1🍕9, 🍰7🍔 등)이 뜨면 50%의 확률로 <strong>조식(아침)</strong> 또는 <strong>석식(저녁)</strong>이 배정됩니다.
+            </div>
+
+            <!-- 3. 매칭 릴 컴포넌트 -->
+            <section class="slot-machine-container">
+                <div class="slot-title">👑 오늘의 급식 매칭 릴</div>
+                <div class="slot-reels">
+                    <div class="reel" id="reel1">7</div>
+                    <div class="reel" id="reel2">🍕</div>
+                    <div class="reel" id="reel3">7</div>
+                </div>
+                <button class="draw-btn" id="drawBtn" disabled>오늘의 급식 매칭하기! 🌟</button>
+            </section>
+
+            <!-- 당첨 배너 -->
+            <div class="destiny-banner" id="destinyBanner">🎉 축하합니다! 행운의 777 매칭 성공! [중식] 오픈! 🎉</div>
+
+            <!-- 4. 실시간 급식 당첨 결과 표시판 -->
+            <div id="mealBoard">
+                <div class="loading">학교를 먼저 검색하여 등록해주세요! 🔍</div>
+            </div>
+        </div>
+
+        <!-- 5. 만족도 조사 피드백 영역 -->
+        <div class="card survey-section" id="surveyCard" style="display: none;">
+            <div class="survey-title">📊 오늘 급식 한줄평 조사</div>
+            
+            <div class="rating-stars" id="ratingContainer">
+                <span class="star" data-value="1">★</span>
+                <span class="star" data-value="2">★</span>
+                <span class="star" data-value="3">★</span>
+                <span class="star" data-value="4">★</span>
+                <span class="star" data-value="5">★</span>
+            </div>
+
+            <div class="feedback-input-container">
+                <input type="text" id="feedbackInput" placeholder="오늘 급식 평을 럭셔리하게 남겨줘!">
+                <button id="submitFeedbackBtn">등록</button>
+            </div>
+
+            <div class="feedback-list" id="feedbackList">
+                <!-- 등록된 피드백들이 표시될 공간 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 알레르기 번호 매핑 맵
+        const allergyMap = {
+            "1": "🥚", "2": "🥛", "3": "🌾", "4": "🥜", "5": "🫘",
+            "6": "🌾", "7": "🐟", "8": "🦀", "9": "🦐", "10": "🐷",
+            "11": "🍑", "12": "🍅", "13": "🧪", "14": "🥜", "15": "🐔",
+            "16": "🐮", "17": "🦑", "18": "🐚", "19": "🌲"
+        };
+        const allergyNames = {
+            "1": "난류", "2": "우유", "3": "메밀", "4": "땅콩", "5": "대두",
+            "6": "밀", "7": "고등어", "8": "게", "9": "새우", "10": "돼지고기",
+            "11": "복숭아", "12": "토마토", "13": "아황산류", "14": "호두", "15": "닭고기",
+            "16": "쇠고기", "17": "오징어", "18": "조개류", "19": "잣"
+        };
+
+        // 🎰 릴에 들어갈 슬롯 풀 (1~9 숫자 + 최고의 음식 디저트 이모지 10가지!)
+        const slotPool = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '🍕', '🍔', '🍟', '🍩', '🍰', '🍱', '🍣', '🍿', '🍦', '🌮', '🍗'];
+
+        // 로컬 상태 관리
+        let currentSchool = JSON.parse(localStorage.getItem('savedSchool')) || null;
+        let selectedRating = 5;
+        let isSpinning = false;
+
+        // 임시 실시간 피드백 데이터 저장 (로컬스토리지 활용)
+        let feedbacks = JSON.parse(localStorage.getItem('mealFeedbacks')) || {};
+
+        // 실시간으로 긁어온 급식 객체 저장소
+        let fetchedMeals = {
+            "조식": null,
+            "중식": null,
+            "석식": null
+        };
+
+        // DOM 원소
+        const currentSchoolDisplay = document.getElementById('currentSchoolDisplay');
+        const schoolSearchInput = document.getElementById('schoolSearchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const searchResults = document.getElementById('searchResults');
+        const mealDatePicker = document.getElementById('mealDatePicker');
+        const mealBoard = document.getElementById('mealBoard');
+        const surveyCard = document.getElementById('surveyCard');
+        const ratingStars = document.querySelectorAll('.star');
+        const feedbackInput = document.getElementById('feedbackInput');
+        const submitFeedbackBtn = document.getElementById('submitFeedbackBtn');
+        const feedbackList = document.getElementById('feedbackList');
+        
+        // 매칭 릴 DOM
+        const drawBtn = document.getElementById('drawBtn');
+        const reel1 = document.getElementById('reel1');
+        const reel2 = document.getElementById('reel2');
+        const reel3 = document.getElementById('reel3');
+        const destinyBanner = document.getElementById('destinyBanner');
+
+        // 오늘 날짜 기본 설정
+        const today = new Date();
+        const formattedToday = today.toISOString().split('T')[0];
+        mealDatePicker.value = formattedToday;
+
+        // 초기 시작점
+        initApp();
+
+        function initApp() {
+            if (currentSchool) {
+                displaySchoolName();
+                fetchSchoolMeals(); // 백그라운드 데이터 펫칭
+                surveyCard.style.display = 'block';
+                loadFeedbacks();
+            }
+            updateStarUI(selectedRating);
+        }
+
+        function displaySchoolName() {
+            if (currentSchool) {
+                currentSchoolDisplay.textContent = `🏫 ${currentSchool.SCHUL_NM} (${currentSchool.LCTN_SC_NM})`;
+            }
+        }
+
+        // 1. 학교 검색 API 호출
+        searchBtn.addEventListener('click', searchSchool);
+        schoolSearchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') searchSchool();
+        });
+
+        async function searchSchool() {
+            const query = schoolSearchInput.value.trim();
+            if (!query) {
+                showMessage('검색할 고등학교 이름을 입력해줘!');
+                return;
+            }
+
+            searchResults.innerHTML = '<li>검색 중... 🚀</li>';
+            searchResults.style.display = 'block';
+
+            try {
+                const url = `https://open.neis.go.kr/hub/schoolInfo?Type=json&pIndex=1&pSize=15&SCHUL_NM=${encodeURIComponent(query)}`;
+                const res = await fetch(url);
+                const data = await res.json();
+
+                if (data.schoolInfo) {
+                    const list = data.schoolInfo[1].row;
+                    const highSchools = list.filter(item => item.SCHUL_KND_SC_NM.includes('고등학교'));
+                    
+                    if (highSchools.length === 0) {
+                        searchResults.innerHTML = '<li>검색된 고등학교가 없습니다. 정확히 입력해주세요!</li>';
+                        return;
+                    }
+
+                    searchResults.innerHTML = '';
+                    highSchools.forEach(school => {
+                        const li = document.createElement('li');
+                        li.textContent = `[${school.LCTN_SC_NM}] ${school.SCHUL_NM}`;
+                        li.addEventListener('click', () => selectSchool(school));
+                        searchResults.appendChild(li);
+                    });
+                } else {
+                    searchResults.innerHTML = '<li>학교를 찾을 수 없습니다. 철자를 확인해 주세요!</li>';
+                }
+            } catch (err) {
+                console.error(err);
+                searchResults.innerHTML = '<li>네트워크 연결 오류가 발생했습니다.</li>';
+            }
+        }
+
+        // 2. 학교 선택 시 로컬 저장 및 급식 조회 준비
+        function selectSchool(school) {
+            currentSchool = {
+                ATPT_OFCDC_SC_CODE: school.ATPT_OFCDC_SC_CODE,
+                SD_SCHUL_CODE: school.SD_SCHUL_CODE,
+                SCHUL_NM: school.SCHUL_NM,
+                LCTN_SC_NM: school.LCTN_SC_NM
+            };
+
+            localStorage.setItem('savedSchool', JSON.stringify(currentSchool));
+            searchResults.style.display = 'none';
+            schoolSearchInput.value = '';
+            
+            displaySchoolName();
+            fetchSchoolMeals();
+            surveyCard.style.display = 'block';
+            loadFeedbacks();
+        }
+
+        // 3. 백그라운드 데이터 획득 & 릴 활성화
+        mealDatePicker.addEventListener('change', fetchSchoolMeals);
+
+        async function fetchSchoolMeals() {
+            if (!currentSchool) return;
+
+            // 초기화
+            fetchedMeals = { "조식": null, "중식": null, "석식": null };
+            drawBtn.disabled = true;
+            destinyBanner.style.display = 'none';
+            mealBoard.innerHTML = '<div class="loading">실시간 나이스 데이터 로딩 완료 전... 🍳</div>';
+
+            const rawDate = mealDatePicker.value;
+            const apiDate = rawDate.replace(/-/g, '');
+
+            try {
+                const url = `https://open.neis.go.kr/hub/mealServiceDietInfo?Type=json&ATPT_OFCDC_SC_CODE=${currentSchool.ATPT_OFCDC_SC_CODE}&SD_SCHUL_CODE=${currentSchool.SD_SCHUL_CODE}&MLSV_YMD=${apiDate}`;
+                const res = await fetch(url);
+                const data = await res.json();
+
+                if (data.mealServiceDietInfo) {
+                    const mealRows = data.mealServiceDietInfo[1].row;
+                    
+                    mealRows.forEach(row => {
+                        fetchedMeals[row.MMEAL_SC_NM] = row;
+                    });
+
+                    mealBoard.innerHTML = '<div class="loading" style="color: #2b1de8;">✨ 데이터 동기화 완료! "오늘의 급식 매칭하기!" 버튼을 눌러 당신의 오늘 급식 운명을 확인하세요! ✨</div>';
+                    drawBtn.disabled = false;
+                } else {
+                    mealBoard.innerHTML = '<div class="loading">😭 해당 날짜에 조회 가능한 급식이 전혀 없습니다. (주말/방학/미등록)</div>';
+                }
+            } catch (err) {
+                console.error(err);
+                mealBoard.innerHTML = '<div class="loading">❌ 급식 정보를 동기화하는 중 장애가 발생했습니다.</div>';
+            }
+            loadFeedbacks();
+        }
+
+        // 🎰 4. 초호화 운명 매칭 릴 로직
+        drawBtn.addEventListener('click', rollDestinySlot);
+
+        function rollDestinySlot() {
+            if (isSpinning || !currentSchool) return;
+            isSpinning = true;
+            drawBtn.disabled = true;
+            destinyBanner.style.display = 'none';
+            mealBoard.innerHTML = '<div class="loading" style="color: #ff3366;">🎲 운명의 조합을 맞추는 중... 두근두근!</div>';
+
+            let count = 0;
+            const duration = 15; // 회전 횟수
+            
+            const spinInterval = setInterval(() => {
+                // 혼합 풀에서 랜덤 선택 (숫자와 이모지 믹스!)
+                const r1 = slotPool[Math.floor(Math.random() * slotPool.length)];
+                const r2 = slotPool[Math.floor(Math.random() * slotPool.length)];
+                const r3 = slotPool[Math.floor(Math.random() * slotPool.length)];
+
+                reel1.textContent = r1;
+                reel2.textContent = r2;
+                reel3.textContent = r3;
+
+                // 7 색상 강조 효과
+                updateReelHighlight(reel1, r1);
+                updateReelHighlight(reel2, r2);
+                updateReelHighlight(reel3, r3);
+
+                count++;
+                if (count >= duration) {
+                    clearInterval(spinInterval);
+                    determineOutcome();
+                }
+            }, 100);
+        }
+
+        function updateReelHighlight(reelEl, val) {
+            if (val === '7') {
+                reelEl.classList.add('active-7');
+            } else {
+                reelEl.classList.remove('active-7');
+            }
+        }
+
+        // 결과 결정 및 급식 표시
+        function determineOutcome() {
+            isSpinning = false;
+            drawBtn.disabled = false;
+
+            // 최종 행운의 캐릭터 조합 선택
+            const d1 = slotPool[Math.floor(Math.random() * slotPool.length)];
+            const d2 = slotPool[Math.floor(Math.random() * slotPool.length)];
+            const d3 = slotPool[Math.floor(Math.random() * slotPool.length)];
+
+            reel1.textContent = d1;
+            reel2.textContent = d2;
+            reel3.textContent = d3;
+
+            updateReelHighlight(reel1, d1);
+            updateReelHighlight(reel2, d2);
+            updateReelHighlight(reel3, d3);
+
+            const resultStr = `${d1}${d2}${d3}`;
+            let chosenMealType = "";
+
+            if (resultStr === "777") {
+                // 대망의 777 대박 중식 당첨!
+                chosenMealType = "중식";
+                destinyBanner.textContent = `🎉 축하합니다! 행운의 777 매칭 성공! [중식] 오픈! 🎉`;
+                destinyBanner.className = "destiny-banner destiny-jackpot";
+                destinyBanner.style.display = "block";
+            } else {
+                // 777이 아닐 경우 50% 확률로 조식 또는 석식
+                const coinFlip = Math.random() < 0.5;
+                chosenMealType = coinFlip ? "조식" : "석식";
+                
+                destinyBanner.textContent = `🎲 릴 결과 [${resultStr}] ➔ 오늘 배정된 식사는 [${chosenMealType}]!`;
+                destinyBanner.className = "destiny-banner destiny-normal";
+                destinyBanner.style.display = "block";
+            }
+
+            renderDrawnMeal(chosenMealType);
+        }
+
+        // 선택받은 급식 렌더링
+        function renderDrawnMeal(mealType) {
+            const mealData = fetchedMeals[mealType];
+            mealBoard.innerHTML = '';
+
+            if (!mealData) {
+                // 당첨된 타입의 식단이 없는 경우 (예: 석식은 없는 학교이거나 주말일 때)
+                const noMealDiv = document.createElement('div');
+                noMealDiv.className = 'loading';
+                noMealDiv.style.color = '#B8860B';
+                noMealDiv.innerHTML = `
+                    <div style="font-size: 1.5rem; margin-bottom: 10px;">😭 운명의 장난!</div>
+                    오늘 이 학교에는 선택된 <strong>[${mealType}]</strong> 제공 정보가 존재하지 않습니다.<br>
+                    <span style="font-size: 0.9rem; color: #666;">(다시 굴려서 다른 식사를 노려보세요!)</span>
+                `;
+                mealBoard.appendChild(noMealDiv);
+                return;
+            }
+
+            // 제대로 존재할 경우 화면에 빌드
+            const section = document.createElement('section');
+            section.className = 'meal-section';
+
+            const titleDiv = document.createElement('div');
+            titleDiv.className = 'meal-title';
+            titleDiv.innerHTML = `<span>👑 배정 식단: ${mealData.MMEAL_SC_NM}</span> <span class="meal-calories">${mealData.CAL_INFO}</span>`;
+            section.appendChild(titleDiv);
+
+            const menuUl = document.createElement('ul');
+            menuUl.className = 'meal-menu';
+
+            const rawMenus = mealData.DDISH_NM.split('<br/>');
+
+            rawMenus.forEach(menuStr => {
+                if (!menuStr.trim()) return;
+
+                const li = document.createElement('li');
+                li.className = 'menu-item';
+
+                const allergyReg = /\(([^)]+)\)/;
+                const match = menuStr.match(allergyReg);
+
+                let cleanName = menuStr.replace(allergyReg, '').trim();
+                cleanName = cleanName.replace(/\*/g, '');
+
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = cleanName;
+                li.appendChild(nameSpan);
+
+                if (match && match[1]) {
+                    const numbers = match[1].split('.');
+                    const badgeContainer = document.createElement('div');
+                    badgeContainer.className = 'allergy-badges';
+
+                    numbers.forEach(num => {
+                        const trimNum = num.trim();
+                        if (allergyMap[trimNum]) {
+                            const badge = document.createElement('span');
+                            badge.className = 'allergy-badge';
+                            badge.textContent = allergyMap[trimNum];
+                            badge.title = `${allergyNames[trimNum]} 함유`;
+                            badgeContainer.appendChild(badge);
+                        }
+                    });
+                    li.appendChild(badgeContainer);
+                }
+
+                menuUl.appendChild(li);
+            });
+
+            section.appendChild(menuUl);
+
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'info-txt';
+            infoDiv.textContent = `🌱 영양 정보: ${mealData.NTR_INFO.substring(0, 100)}...`;
+            section.appendChild(infoDiv);
+
+            mealBoard.appendChild(section);
+        }
+
+        // 5. 별점 및 한줄평 피드백 로직
+        ratingStars.forEach(star => {
+            star.addEventListener('click', (e) => {
+                selectedRating = parseInt(e.target.getAttribute('data-value'));
+                updateStarUI(selectedRating);
+            });
+        });
+
+        function updateStarUI(rating) {
+            ratingStars.forEach(star => {
+                const val = parseInt(star.getAttribute('data-value'));
+                if (val <= rating) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+        }
+
+        submitFeedbackBtn.addEventListener('click', submitFeedback);
+        feedbackInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') submitFeedback();
+        });
+
+        function submitFeedback() {
+            const comment = feedbackInput.value.trim();
+            if (!comment) {
+                showMessage('내용을 입력하고 등록 버튼을 눌러줘!');
+                return;
+            }
+
+            const rawDate = mealDatePicker.value;
+            const schoolCode = currentSchool.SD_SCHUL_CODE;
+            const uniqueKey = `${schoolCode}_${rawDate}`;
+
+            if (!feedbacks[uniqueKey]) {
+                feedbacks[uniqueKey] = [];
+            }
+
+            const timeString = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            const newPost = {
+                rating: selectedRating,
+                comment: comment,
+                time: timeString,
+                author: `학생_${Math.floor(Math.random() * 900) + 100}`
+            };
+
+            feedbacks[uniqueKey].unshift(newPost);
+            localStorage.setItem('mealFeedbacks', JSON.stringify(feedbacks));
+
+            feedbackInput.value = '';
+            selectedRating = 5;
+            updateStarUI(5);
+
+            loadFeedbacks();
+        }
+
+        function loadFeedbacks() {
+            feedbackList.innerHTML = '';
+            if (!currentSchool) return;
+
+            const rawDate = mealDatePicker.value;
+            const schoolCode = currentSchool.SD_SCHUL_CODE;
+            const uniqueKey = `${schoolCode}_${rawDate}`;
+
+            const currentFeedbacks = feedbacks[uniqueKey] || [];
+
+            if (currentFeedbacks.length === 0) {
+                feedbackList.innerHTML = '<div style="text-align:center; color:#999; font-size:0.9rem;">아직 한줄평 조사가 없습니다. 첫 소감을 등록해봐! ✍️</div>';
+                return;
+            }
+
+            currentFeedbacks.forEach(fb => {
+                const div = document.createElement('div');
+                div.className = 'feedback-item';
+
+                const starsText = '★'.repeat(fb.rating) + '☆'.repeat(5 - fb.rating);
+
+                div.innerHTML = `
+                    <div class="feedback-header">
+                        <span>👤 ${fb.author} <span style="color:#FFA500; margin-left:5px;">${starsText}</span></span>
+                        <span>${fb.time}</span>
+                    </div>
+                    <div style="margin-top: 5px; color:#444;">${escapeHtml(fb.comment)}</div>
+                `;
+                feedbackList.appendChild(div);
+            });
+        }
+
+        // 인클라우드 모달 대안 안내 창
+        function showMessage(msg) {
+            const div = document.createElement('div');
+            div.style.position = 'fixed';
+            div.style.top = '20px';
+            div.style.left = '50%';
+            div.style.transform = 'translateX(-50%)';
+            div.style.background = '#FF4500';
+            div.style.color = '#fff';
+            div.style.padding = '12px 24px';
+            div.style.borderRadius = '10px';
+            div.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)';
+            div.style.zIndex = '9999';
+            div.style.fontWeight = 'bold';
+            div.style.fontSize = '0.95rem';
+            div.textContent = msg;
+            
+            document.body.appendChild(div);
+            
+            setTimeout(() => {
+                div.remove();
+            }, 2500);
+        }
+
+        // 보안용 문자 이스케이프 함수
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
